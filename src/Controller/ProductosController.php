@@ -57,7 +57,7 @@ class ProductosController extends AbstractController
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-    #[Route('/new/', name: 'api_alfareria_productos_new', methods: ['POST'])]
+    #[Route('/new', name: 'api_alfareria_productos_new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent());
