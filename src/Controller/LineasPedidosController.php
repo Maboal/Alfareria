@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\LineasPedidos;
 use App\Entity\Pedidos;
 use App\Entity\Productos;
+
 use App\Repository\LineasPedidosRepository;
 use App\Repository\PedidosRepository;
 use App\Repository\ProductosRepository;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
@@ -52,6 +54,85 @@ class LineasPedidosController extends AbstractController
         
 
         return new JsonResponse($data, Response::HTTP_OK);
+    }
+
+
+    #[Route('/new', name: 'api_alfareria_lineasPedidos_create', methods: ['POST'])]
+    public function create(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $lineaPedido = new LineasPedidos();
+        $lineaPedido->setCantidad($data['cantidad']);
+        $lineaPedido->setPrecio($data['precio']);
+        $lineaPedido->setIdProducto($this->productosRepository->find($data['idProducto']));
+        $lineaPedido->setIdPedido($this->pedidosRepository->find($data['idPedido']));
+
+        $this->lineasPedidosRepository->save($lineaPedido);
+
+        return new JsonResponse([
+            'message' => 'Linea de pedido creada correctamente.',
+            'lineaPedido' => $lineaPedido,
+        ], Response::HTTP_CREATED);
+    }
+
+    #[Route('/show/{id}', name: 'api_alfareria_lineasPedidos_show', methods: ['GET'])]
+    public function show(int $id): JsonResponse
+    {
+        $lineaPedido = $this->lineasPedidosRepository->find($id);
+
+        if (!$lineaPedido) {
+            return new JsonResponse([
+                'message' => 'La linea de pedido no existe.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return new JsonResponse([
+            'lineaPedido' => $lineaPedido,
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/update/{id}', name: 'api_alfareria_lineasPedidos_update', methods: ['PUT'])]
+    public function update(int $id, Request $request): JsonResponse
+    {
+        $data = $request->request->all();
+
+        $lineaPedido = $this->lineasPedidosRepository->find($id);
+
+        if (!$lineaPedido) {
+            return new JsonResponse([
+                'message' => 'La linea de pedido no existe.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $lineaPedido->setCantidad($data['cantidad'] ?? $lineaPedido->getCantidad());
+        $lineaPedido->setPrecio($data['precio'] ?? $lineaPedido->getPrecio());
+        $lineaPedido->setIdProducto($data['idProducto'] ?? $lineaPedido->getIdProducto());
+        $lineaPedido->setIdPedido($data['idPedido'] ?? $lineaPedido->getIdPedido());
+
+        $this->lineasPedidosRepository->save($lineaPedido);
+
+        return new JsonResponse([
+            'message' => 'Linea de pedido actualizada correctamente.',
+            'lineaPedido' => $lineaPedido,
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/delete/{id}', name: 'api_alfareria_lineasPedidos_delete', methods: ['DELETE'])]
+    public function delete(int $id): JsonResponse
+    {
+        $lineaPedido = $this->lineasPedidosRepository->find($id);
+
+        if (!$lineaPedido) {
+            return new JsonResponse([
+                'message' => 'La linea de pedido no existe.',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $this->lineasPedidosRepository->delete($lineaPedido);
+
+        return new JsonResponse([
+            'message' => 'Linea de pedido eliminada correctamente.',
+        ], Response::HTTP_OK);
     }
 
     // #[Route('/{id}', name: 'api_alfareria_usuarios_show', methods: ['GET'])]

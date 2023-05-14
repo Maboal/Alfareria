@@ -14,7 +14,7 @@ class LineasPedidos
     #[ORM\Column(name: 'id')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(inversedBy: 'lineasPedidos')]
+    #[ORM\ManyToOne(inversedBy: 'lineasPedidos', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name:'id_producto', nullable: false, referencedColumnName:'id')]
     private ?Productos $id_producto = null;
 
@@ -24,7 +24,7 @@ class LineasPedidos
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $precio = null;
 
-    #[ORM\ManyToOne(inversedBy: 'lineasPedidos')]
+    #[ORM\ManyToOne(inversedBy: 'lineasPedidos', cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(name:'id_pedido', nullable: false, referencedColumnName:'id')]
     private ?Pedidos $id_pedido = null;
 

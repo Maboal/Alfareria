@@ -3,6 +3,10 @@
 namespace App\Controller;
 
 use App\Entity\Pedidos;
+use App\Entity\Productos;
+use App\Entity\LineasPedidos;
+use App\Repository\LineasPedidosRepository;
+use App\Repository\ProductosRepository;
 use App\Repository\PedidosRepository;
 use App\Repository\UsuariosRepository;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,11 +20,13 @@ class PedidosController extends AbstractController
 {
     private PedidosRepository $pedidosRepository;
     private UsuariosRepository $usuariosRepository;
+    private ProductosRepository $productosRepository;
 
-    public function __construct(PedidosRepository $pedidosRepo, UsuariosRepository $usuariosRepo)
+    public function __construct(PedidosRepository $pedidosRepo, UsuariosRepository $usuariosRepo, ProductosRepository $productosRepo)
     {
         $this->pedidosRepository = $pedidosRepo;
         $this->usuariosRepository = $usuariosRepo;
+        $this->productosRepository = $productosRepo;
 
     }
 
@@ -65,19 +71,40 @@ class PedidosController extends AbstractController
         return new JsonResponse($data, Response::HTTP_OK);
     }
 
-    #[Route('/new/', name: 'api_alfareria_pedidos_new', methods: ['POST'])]
+    #[Route('/new', name: 'api_alfareria_pedidos_new', methods: ['POST'])]
     public function new(Request $request): JsonResponse
-    {
+    {   
+        
         $data = json_decode($request->getContent());
         $usuario = $this->usuariosRepository->find($data->id_usuario);
+        $lineasPedidoArray = $data->lineasPedidos;
         $pedido = new Pedidos();
-        $pedido->setFecha($data->fecha)
-            ->setTotal($data->total)
-            ->setEstado($data->estado)
-            ->setIdUsuario($usuario);
+        
+        $pedido->setFecha(new \DateTime('now'))
+        ->setTotal($data->total)
+        ->setIdUsuario($usuario);
+        
+        foreach ($lineasPedidoArray as $value) {
+            $idProducto = $value->id_producto;
+            // return new JsonResponse($idProducto);
 
+            $producto = $this->productosRepository->findOneBy(['id' => $idProducto]);
+            if ($producto === null){
+                continue;
+                //TODO: informar productID doesn't exist
+            }
+
+            $lineaPedido = new LineasPedidos();
+            $lineaPedido ->setIdProducto($producto)
+            ->setCantidad($value->cantidad)
+            ->setPrecio($producto->getPrecio())
+            ->setIdPedido($pedido);
+
+            $pedido->addLineasPedido($lineaPedido);
+        }
+        
         $this->pedidosRepository->save($pedido, true);
-
+        
         return new JsonResponse($data, Response::HTTP_CREATED);
     }
 

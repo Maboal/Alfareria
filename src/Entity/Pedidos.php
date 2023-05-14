@@ -22,10 +22,10 @@ class Pedidos
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?string $total = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $estado = null;
 
-    #[ORM\OneToMany(mappedBy: 'id_pedido', targetEntity: LineasPedidos::class)]
+    #[ORM\OneToMany(mappedBy: 'id_pedido', targetEntity: LineasPedidos::class, cascade: ['persist', 'remove'])]
     private Collection $lineasPedidos;
 
     #[ORM\ManyToOne(inversedBy: 'pedidos')]

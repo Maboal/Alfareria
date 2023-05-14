@@ -34,7 +34,7 @@ class Productos
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $categoria = null;
 
-    #[ORM\OneToMany(mappedBy: 'id_producto', targetEntity: LineasPedidos::class)]
+    #[ORM\OneToMany(mappedBy: 'id_producto', targetEntity: LineasPedidos::class, cascade: ['persist', 'remove'])]
     private Collection $lineasPedidos;
 
     public function __construct()
